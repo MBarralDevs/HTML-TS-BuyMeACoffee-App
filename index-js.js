@@ -1,9 +1,14 @@
-import { createWalletClient, custom } from "https://esm.sh/viem";
+import {
+  createWalletClient,
+  custom,
+  createPublicClient,
+} from "https://esm.sh/viem";
 
 const connectBtn = document.getElementById("connectBtn");
 const buyCoffeeBtn = document.getElementById("buyCoffeeBtn");
 const getBalanceBtn = document.getElementById("getBalanceBtn");
 const withdrawBtn = document.getElementById("withdrawBtn");
+const inputEthAmount = document.getElementById("inputEthAmount");
 
 let walletClient;
 
@@ -24,13 +29,22 @@ async function connect() {
   connectBtn.innerHTML = "Connected!";
 }
 
-function buyCoffee() {
+async function buyCoffee() {
   if (typeof window.ethereum === "undefined") {
     connectBtn.innerHTML = "Please install MetaMask!";
     return;
   }
   console.log("Buying a coffee...");
-  // Add buy coffee logic here
+
+  const ethAmount = inputEthAmount.value;
+  console.log(`Amount entered: ${ethAmount} ETH`);
+
+  walletClient = createWalletClient({
+    transport: custom(window.ethereum),
+    //chain: { id: 1 }, // Mainnet
+  });
+
+  await walletClient.requestAddresses();
 }
 
 function getBalance() {
