@@ -24,13 +24,17 @@ async function connect() {
   }
   console.log("Connecting to wallet...");
 
-  walletClient = createWalletClient({
-    transport: custom(window.ethereum),
-  });
+  try {
+    walletClient = createWalletClient({
+      transport: custom(window.ethereum),
+    });
 
-  await walletClient.requestAddresses();
+    await walletClient.requestAddresses();
 
-  connectBtn.innerHTML = "Connected!";
+    connectBtn.innerHTML = "Connected!";
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 async function buyCoffee() {
@@ -39,39 +43,43 @@ async function buyCoffee() {
     connectBtn.innerHTML = "Please install MetaMask!";
     return;
   }
-  console.log("Buying a coffee...");
+  try {
+    console.log("Buying a coffee...");
 
-  // Get the ETH amount from the input field
-  const ethAmount = inputEthAmount.value;
-  console.log(`Amount entered: ${ethAmount} ETH`);
+    // Get the ETH amount from the input field
+    const ethAmount = inputEthAmount.value;
+    console.log(`Amount entered: ${ethAmount} ETH`);
 
-  // Initialize walletClient
-  walletClient = createWalletClient({
-    transport: custom(window.ethereum),
-  });
+    // Initialize walletClient
+    walletClient = createWalletClient({
+      transport: custom(window.ethereum),
+    });
 
-  const [account] = await walletClient.requestAddresses();
-  const currentChain = await getCurrentChain(walletClient);
+    const [account] = await walletClient.requestAddresses();
+    const currentChain = await getCurrentChain(walletClient);
 
-  // Initialize publicClient
-  publicClient = createPublicClient({
-    transport: custom(window.ethereum),
-  });
+    // Initialize publicClient
+    publicClient = createPublicClient({
+      transport: custom(window.ethereum),
+    });
 
-  //We are simulating the transaction here, to test it before sending it for real
-  const { request } = await publicClient.simulateContract({
-    address: contractAddress,
-    abi,
-    functionName: "fund",
-    account,
-    chain: currentChain,
-    value: parseEther(ethAmount),
-  });
-  console.log(request);
+    //We are simulating the transaction here, to test it before sending it for real
+    const { request } = await publicClient.simulateContract({
+      address: contractAddress,
+      abi,
+      functionName: "fund",
+      account,
+      chain: currentChain,
+      value: parseEther(ethAmount),
+    });
+    console.log(request);
 
-  // Send the transaction
-  const txHash = await walletClient.writeContract(request);
-  console.log(`Transaction hash: ${txHash}`);
+    // Send the transaction
+    const txHash = await walletClient.writeContract(request);
+    console.log(`Transaction hash: ${txHash}`);
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 async function getBalance() {
@@ -79,27 +87,107 @@ async function getBalance() {
     connectBtn.innerHTML = "Please install MetaMask!";
     return;
   }
-  console.log("Getting balance...");
 
-  // Initialize walletClient
-  publicClient = createPublicClient({
-    transport: custom(window.ethereum),
-  });
+  try {
+    console.log("Getting balance...");
 
-  const balance = await publicClient.getBalance({
-    address: contractAddress,
-  });
+    // Initialize walletClient
+    publicClient = createPublicClient({
+      transport: custom(window.ethereum),
+    });
 
-  console.log(formatEther(balance));
+    const balance = await publicClient.getBalance({
+      address: contractAddress,
+    });
+
+    console.log(formatEther(balance));
+  } catch (error) {
+    console.log(error);
+  }
 }
 
-function withdraw() {
+async function withdraw() {
   if (typeof window.ethereum === "undefined") {
     connectBtn.innerHTML = "Please install MetaMask!";
     return;
   }
   console.log("Withdrawing funds...");
-  // Add withdraw logic here
+
+  try {
+    // Initialize walletClient
+    walletClient = createWalletClient({
+      transport: custom(window.ethereum),
+    });
+
+    const [account] = await walletClient.requestAddresses();
+    console.log(`Connected account: ${account}`);
+
+    const currentChain = await getCurrentChain(walletClient);
+
+    // Initialize publicClient
+    publicClient = createPublicClient({
+      transport: custom(window.ethereum),
+      chain: currentChain,
+    });
+
+    // Get contract balance before withdrawal
+    const contractBalance = await publicClient.getBalance({
+      address: contractAddress,
+    });
+    console.log(
+      `Contract balance before withdrawal: ${formatEther(contractBalance)} ETH`
+    );
+
+    // Simulate the withdrawal transaction
+    const { request } = await publicClient.simulateContract({
+      address: contractAddress,
+      abi,
+      functionName: "withdraw",
+      account,
+      chain: currentChain,
+    });
+    console.log("Simulation successful:", request);
+
+    // Send the withdrawal transaction
+    const txHash = await walletClient.writeContract(request);
+    console.log(`Withdrawal transaction hash: ${txHash}`);
+
+    alert(`Withdrawal transaction sent! Hash: ${txHash}`);
+
+    // Wait for transaction receipt
+    const receipt = await publicClient.waitForTransactionReceipt({
+      hash: txHash,
+    });
+    console.log("Withdrawal confirmed:", receipt);
+
+    // Get new contract balance
+    const newContractBalance = await publicClient.getBalance({
+      address: contractAddress,
+    });
+    console.log(
+      `Contract balance after withdrawal: ${formatEther(
+        newContractBalance
+      )} ETH`
+    );
+
+    alert(
+      `Withdrawal successful!\nWithdrawn: ${formatEther(contractBalance)} ETH`
+    );
+  } catch (error) {
+    console.error("Withdrawal failed:", error);
+
+    // Provide more specific error messages
+    if (
+      error.message.includes("NotOwner") ||
+      error.message.includes("579610db")
+    ) {
+      alert("Withdrawal failed: Only the contract owner can withdraw funds!");
+    } else if (error.message.includes("rejected")) {
+      alert("Transaction rejected by user");
+    } else {
+      alert(`Withdrawal failed: ${error.message}`);
+    }
+  }
 }
 
 async function getCurrentChain(client) {
