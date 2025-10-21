@@ -42,7 +42,6 @@ async function buyCoffee() {
 
   // Get the ETH amount from the input field
   const ethAmount = inputEthAmount.value;
-  const currentChain = await getCurrentChain(walletClient);
   console.log(`Amount entered: ${ethAmount} ETH`);
 
   // Initialize walletClient
@@ -50,7 +49,8 @@ async function buyCoffee() {
     transport: custom(window.ethereum),
   });
 
-  const [connectedAccounts] = await walletClient.requestAddresses();
+  const [account] = await walletClient.requestAddresses();
+  const currentChain = await getCurrentChain(walletClient);
 
   // Initialize publicClient
   publicClient = createPublicClient({
@@ -62,7 +62,7 @@ async function buyCoffee() {
     address: contractAddress,
     abi,
     functionName: "fund",
-    connectedAccounts,
+    account,
     chain: currentChain,
     value: parseEther(ethAmount),
   });
