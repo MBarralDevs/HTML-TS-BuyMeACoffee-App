@@ -4,21 +4,37 @@ const getBalanceBtn = document.getElementById("getBalanceBtn");
 const withdrawBtn = document.getElementById("withdrawBtn");
 
 function connect() {
+  if (typeof window.ethereum === "undefined") {
+    connectBtn.innerHTML = "Please install MetaMask!";
+    return;
+  }
   console.log("Connecting to wallet...");
   // Add wallet connection logic here
 }
 
 function buyCoffee() {
+  if (typeof window.ethereum === "undefined") {
+    connectBtn.innerHTML = "Please install MetaMask!";
+    return;
+  }
   console.log("Buying a coffee...");
   // Add buy coffee logic here
 }
 
 function getBalance() {
+  if (typeof window.ethereum === "undefined") {
+    connectBtn.innerHTML = "Please install MetaMask!";
+    return;
+  }
   console.log("Getting balance...");
   // Add get balance logic here
 }
 
 function withdraw() {
+  if (typeof window.ethereum === "undefined") {
+    connectBtn.innerHTML = "Please install MetaMask!";
+    return;
+  }
   console.log("Withdrawing funds...");
   // Add withdraw logic here
 }
