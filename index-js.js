@@ -11,6 +11,7 @@ const withdrawBtn = document.getElementById("withdrawBtn");
 const inputEthAmount = document.getElementById("inputEthAmount");
 
 let walletClient;
+let publicClient;
 
 async function connect() {
   if (typeof window.ethereum === "undefined") {
@@ -21,7 +22,6 @@ async function connect() {
 
   walletClient = createWalletClient({
     transport: custom(window.ethereum),
-    //chain: { id: 1 }, // Mainnet
   });
 
   await walletClient.requestAddresses();
@@ -30,21 +30,33 @@ async function connect() {
 }
 
 async function buyCoffee() {
+  // Check if MetaMask is installed
   if (typeof window.ethereum === "undefined") {
     connectBtn.innerHTML = "Please install MetaMask!";
     return;
   }
   console.log("Buying a coffee...");
 
+  // Get the ETH amount from the input field
   const ethAmount = inputEthAmount.value;
   console.log(`Amount entered: ${ethAmount} ETH`);
 
+  // Initialize walletClient
   walletClient = createWalletClient({
     transport: custom(window.ethereum),
-    //chain: { id: 1 }, // Mainnet
   });
 
   await walletClient.requestAddresses();
+
+  // Initialize publicClient
+  publicClient = createPublicClient({
+    transport: custom(window.ethereum),
+  });
+
+  //
+  /*const {request} = await publicClient.simulateTransaction({
+    address:
+})*/
 }
 
 function getBalance() {
