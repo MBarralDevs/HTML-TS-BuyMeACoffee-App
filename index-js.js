@@ -5,7 +5,7 @@ import {
   parseEther,
   defineChain,
 } from "https://esm.sh/viem";
-import { contractAddress, abi } from "./constants-js";
+import { contractAddress, abi } from "./constants-js.js";
 
 const connectBtn = document.getElementById("connectBtn");
 const buyCoffeeBtn = document.getElementById("buyCoffeeBtn");
@@ -42,6 +42,7 @@ async function buyCoffee() {
 
   // Get the ETH amount from the input field
   const ethAmount = inputEthAmount.value;
+  const currentChain = await getCurrentChain(walletClient);
   console.log(`Amount entered: ${ethAmount} ETH`);
 
   // Initialize walletClient
@@ -57,14 +58,19 @@ async function buyCoffee() {
   });
 
   //We are simulating the transaction here, to test it before sending it for real
-  const { request } = await publicClient.simulateTransaction({
+  const { request } = await publicClient.simulateContract({
     address: contractAddress,
-    abi: abi,
+    abi,
     functionName: "fund",
-    account: connectedAccounts,
-    chain: await getCurrentChain(walletClient),
-    amount: parseEther(ethAmount),
+    connectedAccounts,
+    chain: currentChain,
+    value: parseEther(ethAmount),
   });
+  console.log(request);
+
+  // Send the transaction
+  const txHash = await walletClient.writeContract(request);
+  console.log(`Transaction hash: ${txHash}`);
 }
 
 function getBalance() {
