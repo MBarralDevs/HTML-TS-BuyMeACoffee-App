@@ -13,6 +13,7 @@ const buyCoffeeBtn = document.getElementById("buyCoffeeBtn");
 const getBalanceBtn = document.getElementById("getBalanceBtn");
 const withdrawBtn = document.getElementById("withdrawBtn");
 const inputEthAmount = document.getElementById("inputEthAmount");
+const addressToAmountBtn = document.getElementById("addressToAmountBtn");
 
 let walletClient;
 let publicClient;
@@ -190,6 +191,22 @@ async function withdraw() {
   }
 }
 
+async function addressToAmount() {
+  // Get the connected wallet address
+  const [account] = await walletClient.requestAddresses();
+
+  // Read from the contract (no transaction needed, just reading data)
+  const amountFunded = await publicClient.readContract({
+    address: contractAddress,
+    abi,
+    functionName: "getAddressToAmountFunded",
+    args: [account], // Pass the connected address
+  });
+
+  // Log the result
+  console.log(`Amount funded by ${account}: ${formatEther(amountFunded)} ETH`);
+}
+
 async function getCurrentChain(client) {
   const chainId = await client.getChainId();
   const currentChain = defineChain({
@@ -213,3 +230,4 @@ connectBtn.onclick = connect;
 buyCoffeeBtn.onclick = buyCoffee;
 getBalanceBtn.onclick = getBalance;
 withdrawBtn.onclick = withdraw;
+addressToAmountBtn.onclick = addressToAmount;
