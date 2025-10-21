@@ -4,6 +4,7 @@ import {
   createPublicClient,
   parseEther,
   defineChain,
+  formatEther,
 } from "https://esm.sh/viem";
 import { contractAddress, abi } from "./constants-js.js";
 
@@ -73,13 +74,23 @@ async function buyCoffee() {
   console.log(`Transaction hash: ${txHash}`);
 }
 
-function getBalance() {
+async function getBalance() {
   if (typeof window.ethereum === "undefined") {
     connectBtn.innerHTML = "Please install MetaMask!";
     return;
   }
   console.log("Getting balance...");
-  // Add get balance logic here
+
+  // Initialize walletClient
+  publicClient = createPublicClient({
+    transport: custom(window.ethereum),
+  });
+
+  const balance = await publicClient.getBalance({
+    address: contractAddress,
+  });
+
+  console.log(formatEther(balance));
 }
 
 function withdraw() {
