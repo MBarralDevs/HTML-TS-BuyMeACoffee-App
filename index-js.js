@@ -1,15 +1,27 @@
+import { createWalletClient, custom } from "https://esm.sh/viem";
+
 const connectBtn = document.getElementById("connectBtn");
 const buyCoffeeBtn = document.getElementById("buyCoffeeBtn");
 const getBalanceBtn = document.getElementById("getBalanceBtn");
 const withdrawBtn = document.getElementById("withdrawBtn");
 
-function connect() {
+let walletClient;
+
+async function connect() {
   if (typeof window.ethereum === "undefined") {
     connectBtn.innerHTML = "Please install MetaMask!";
     return;
   }
   console.log("Connecting to wallet...");
-  // Add wallet connection logic here
+
+  walletClient = createWalletClient({
+    transport: custom(window.ethereum),
+    //chain: { id: 1 }, // Mainnet
+  });
+
+  await walletClient.requestAddresses();
+
+  connectBtn.innerHTML = "Connected!";
 }
 
 function buyCoffee() {
