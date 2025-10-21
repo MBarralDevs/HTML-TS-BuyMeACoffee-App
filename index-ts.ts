@@ -24,6 +24,8 @@ const inputEthAmount = document.getElementById("inputEthAmount") as HTMLInputEle
 let walletClient: WalletClient | undefined;
 let publicClient: PublicClient | undefined;
 
+console.log("HELLO FROM TYPESCRIPT");
+
 // Type guard for window.ethereum
 declare global {
   interface Window {
